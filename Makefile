@@ -16,7 +16,7 @@ env:
 
 pull:
 	$(DOCKER_COMPOSE) -f $(ELK_CONFIG) pull
-	$(foreach image,$(EXTRA_IMAGES),docker pull $(image);)
+	$(foreach image,$(EXTRA_IMAGES),docker pull quay.io/$(image);)
 
 up:
 	$(DOCKER_COMPOSE) -p $(ELK_APP) -f $(ELK_CONFIG) up -d
