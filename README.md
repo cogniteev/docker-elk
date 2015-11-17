@@ -57,7 +57,7 @@ with the following utility:
 $ scripts/export-kibana-config
 ```
 
-The script leverages [*cogniteev/elk-export-es-index*](https://hub.docker.com/r/cogniteev/elk-export-es-index/) Docker image to export
+The script leverages [*quay.io/cogniteev/elk-export-es-index*](https://quay.io/repository/cogniteev/elk-export-es-index) Docker image to export
 *.kibana* index in a container under JSON format. Then it uses
 `docker cp` commands to retrieve the JSON files back to your workstation.
 

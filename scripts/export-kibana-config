@@ -7,7 +7,7 @@ ROOT_DIR=$(cd "$SCRIPTPATH/.."; pwd)
 
 es_container=`(cd "$ROOT_DIR" && make ps) | tail -n +3 | awk '{print $1}' | grep '_elasticsearch_1$'`
 export_container="export-kibana-index-$$"
-export_image="cogniteev/elk-export-es-index:latest"
+export_image="quay.io/cogniteev/elk-export-es-index:latest"
 
 docker run                              \
   -e "ES_INDEX=.kibana"                 \
