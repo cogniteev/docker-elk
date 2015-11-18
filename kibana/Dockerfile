@@ -1,3 +1,3 @@
-FROM kibana:4.1.1
+FROM kibana:4.2.1
 
 COPY ./docker-entrypoint.sh /
