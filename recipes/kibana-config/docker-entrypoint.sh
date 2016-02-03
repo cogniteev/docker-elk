@@ -1,9 +1,10 @@
 #!/bin/sh -e
 
 CONFIG_DIR=/kibana-config
+ES_URL="http://${ES_HOST:-elasticsearch}:${ELASTICSEARCH_PORT_9200_TCP_PORT}"
 
 put_status() {
-  curl -s -XPUT elasticsearch:9200/.kibana-config/status/init -d "{
+  curl -s -XPUT "$ES_URL/.kibana-config/status/init" -d "{
     \"status\": \"$1\"
   }" >/dev/null 2>&1
 }
@@ -17,8 +18,6 @@ error() {
 if [ "x${ELASTICSEARCH_PORT_9200_TCP_PORT}" = x ] ; then
   error "Error: elasticsearch container does not seem to be linked."
 fi
-
-ES_URL="http://elasticsearch:${ELASTICSEARCH_PORT_9200_TCP_PORT}"
 
 # Wait for Elasticsearch
 for i in `seq 60` ; do
