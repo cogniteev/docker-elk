@@ -1,6 +1,6 @@
 # store Logstash data and Kibana configuration
 elasticsearch:
-  image: elasticsearch:1.7.3
+  image: elasticsearch:2.3.3
 
 logstash:
   build: logstash

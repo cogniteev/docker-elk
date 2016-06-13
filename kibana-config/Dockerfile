@@ -1,1 +1,1 @@
-FROM quay.io/cogniteev/elk-kibana-config:1.0
+FROM quay.io/cogniteev/elk-kibana-config:1.1
