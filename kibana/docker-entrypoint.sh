@@ -2,6 +2,26 @@
 
 set -e
 
+wait_es_api_started() {
+  local host=$(echo "$1" | sed 's@^.*://\([^:]*\):.*@\1@')
+  local port=$(echo "$1" | sed 's@^.*://[^:]*:\(.*\)@\1@')
+  while ! nc -z -q 1 "$host" "$port" ; do
+    sleep 1
+  done
+}
+
+wait_es_index() {
+  for i in `seq 60` ; do
+    if wget -qO- "$1/_cat/indices" 2>/dev/null | \
+             grep -q " open $2" ; then
+      return 0
+    fi
+      echo >&2 "Waiting for $2 Elasticsearch index"
+    sleep 1
+  done
+  return 1
+}
+
 # Add kibana as command if needed
 if [[ "$1" == -* ]]; then
 	set -- kibana "$@"
@@ -19,31 +39,22 @@ if [ "$1" = 'kibana' ]; then
 		echo >&2
 	fi
 
-  # Wait for .kibana-config index to be created if necessary
-  for i in `seq 60` ; do
-    if curl -s "${ELASTICSEARCH_URL}"/_cat/indices 2>/dev/null | \
-			 grep -q " open .kibana-config" ; then
-      break
-    fi
-		echo >&2 "Waiting for kibana-config container"
-    sleep 1
-  done
-	if ! curl -s "${ELASTICSEARCH_URL}"/_cat/indices 2>/dev/null | \
-			grep -q " open .kibana-config" ; then
-  	echo >&2 'Fatal: .kibana-config index does not exists. Timeout error.'
-		exit 1
-	else
-		echo >&2 '.kibana-config index is now opened.'
-		status=$(curl -s "${ELASTICSEARCH_URL}/.kibana-config/status/init?pretty=t" 2>/dev/null | \
-			grep -A1 _source | grep '"status"' | cut -d: -f2 | sed 's/.*"\([^"]*\)".*/\1/')
-		curl -s -XDELETE "${ELASTICSEARCH_URL}/.kibana-config" >/dev/null 2>&1
-		if [ "x$status" != xsuccess ] ;then
-			echo >&2 ".kibana index initialization failed. Abort!"
-			exit 1
-		fi
-	fi
+  wait_es_api_started "$ELASTICSEARCH_URL"
 
-	set -- gosu kibana "$@"
+  if ! wait_es_index "$ELASTICSEARCH_URL" .kibana-config ; then
+  	echo >&2 'Fatal: .kibana-config index does not exists. Timeout error.'
+    exit 1
+  fi
+  echo >&2 '.kibana-config Elasticsearch index is opened.'
+
+  status=$(wget -qO- "${ELASTICSEARCH_URL}/.kibana-config/status/init?pretty=t" 2>/dev/null | \
+  grep -A1 _source | grep '"status"' | cut -d: -f2 | sed 's/.*"\([^"]*\)".*/\1/')
+    wget -qO- -XDELETE "${ELASTICSEARCH_URL}/.kibana-config" >/dev/null 2>&1
+  if [ "x$status" != xsuccess ] ;then
+    echo >&2 ".kibana index initialization failed. Abort!"
+    exit 1
+  fi
+  set -- gosu kibana "$@"
 fi
 
 exec "$@"
