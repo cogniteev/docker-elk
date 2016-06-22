@@ -1,1 +1,1 @@
-FROM quay.io/cogniteev/elk-logstash:1.1
+FROM quay.io/cogniteev/elk-logstash
