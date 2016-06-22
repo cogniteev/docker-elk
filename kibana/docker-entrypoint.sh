@@ -11,15 +11,24 @@ wait_es_api_started() {
 }
 
 wait_es_index() {
-  for i in `seq 60` ; do
+  while true ; do
     if wget -qO- "$1/_cat/indices" 2>/dev/null | \
              grep -q " open $2" ; then
-      return 0
+      break
     fi
-      echo >&2 "Waiting for $2 Elasticsearch index"
+    echo >&2 "Waiting for $2 Elasticsearch index availability"
     sleep 1
   done
-  return 1
+  while true; do
+    local recovery=`wget -qO- "$1/$2/_recovery?pretty&human" | \
+          grep state | sort -u | grep -v DONE`
+    if [ "x$recovery" = x ] ;then
+      break
+    fi
+    echo >&2 "Waiting for $2 Elasticsearch index recovery"
+    sleep 1
+  done
+  return 0
 }
 
 # Add kibana as command if needed
