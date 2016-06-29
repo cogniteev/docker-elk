@@ -12,6 +12,6 @@ kibana-config:
   build: kibana-config
 
 kibana:
-  build: kibana
+  build: recipes/kibana
   ports:
     - "5601:5601"
