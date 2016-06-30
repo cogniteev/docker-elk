@@ -47,13 +47,8 @@ if [ "$1" = 'kibana' ]; then
   fi
   echo >&2 '.kibana-config Elasticsearch index is opened.'
 
-  status=$(wget -qO- "${ELASTICSEARCH_URL}/.kibana-config/status/init?pretty=t" 2>/dev/null | \
-  grep -A1 _source | grep '"status"' | cut -d: -f2 | sed 's/.*"\([^"]*\)".*/\1/')
-    wget -qO- -XDELETE "${ELASTICSEARCH_URL}/.kibana-config" >/dev/null 2>&1
-  if [ "x$status" != xsuccess ] ;then
-    echo >&2 ".kibana index initialization failed. Abort!"
-    exit 1
-  fi
+  wget -q "${ELASTICSEARCH_URL}/_cluster/health?wait_for_status=yellow&timeout=60s"
+  wget -qO- -XDELETE "${ELASTICSEARCH_URL}/.kibana-config" >/dev/null 2>&1
   set -- gosu kibana "$@"
 fi
 
